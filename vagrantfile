@@ -1,0 +1,117 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require "yaml"
+
+# Loading configuration for vagrant up
+## Loading vm config from config/vms folder. Each VM has their file
+vms = []
+Dir.glob('config_vms/*.yml') do |config_vms_file|
+    vms.append(YAML.load_file(config_vms_file))
+end
+
+## Load local or default settings
+if File.exists?("Vagrantfile.settings.local.yml") then
+  settings = YAML.load_file("Vagrantfile.settings.local.yml")
+else
+  settings = YAML.load_file("Vagrantfile.settings.yml")
+end
+
+# Vagrant stuff. Configure and deploy vms
+## Vm definition
+Vagrant.configure("2") do |config|
+# general configuration (for all boxes)
+# =====================================
+  # Vagrant Plugin config
+  # =====================================
+  config.vbguest.auto_update = settings["vbguest_auto_update"]
+
+  # Vagrant Box Settings
+  # =====================================
+  config.vm.box = settings["box"]
+  config.vm.box_version = settings["box_version"]     
+  config.vm.box_check_update = settings["box_check_update"]
+
+  # Virtualbox Settings
+  # =====================================
+  config.vm.provider "virtualbox" do |v|
+    v.linked_clone = settings["vb_linked_clone"] # more efficient storage / generally faster
+    v.memory = settings["memory"] 
+    v.cpus = settings["cpu"] 
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    #v.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ] # disable the log file
+    #v.customize ["modifyvm", :id, "--uartmode1", "file",File.join(Dir.pwd, "temp/ubuntu-bionic-18.04-cloudimg-console.log")]
+  end
+
+# Virtual Machine Configuration
+# =====================================
+  # configuration for each box
+  # =============================================
+  vms.each_with_index do |machine, i|
+    config.vm.define machine["hostname"], primary: machine["primary"] do |node|
+      node.vm.box = machine["box"] || settings["box"]
+      node.vm.box_version = machine["box_version"]|| settings["box_version"]
+      node.vm.hostname = machine["hostname"]
+      node.vm.network :private_network, ip: machine["ip"]
+      node.vm.network "forwarded_port", guest: 22, host: machine["ssh_host_port"] , id: "ssh", host_ip: "127.0.0.1"
+      node.vm.synced_folder ".", "/vagrant", disabled: true
+      if machine.key?("forward_ports") then
+        machine["forward_ports"].each_with_index do |port, j|
+          node.vm.network "forwarded_port", guest: port["guest"], host: port["host"], id: "forward_"+j.to_s, host_ip: "127.0.0.1"
+        end
+      end
+
+      node.vm.provider "virtualbox" do |vb|
+        vb.memory = settings["memory"]
+        vb.cpus = settings["cpu"]
+      end
+
+      if machine.key?("synched_folder") then
+        machine["synched_folder"].each_with_index do |synched_folder, j|
+          node.vm.synced_folder synched_folder["src"], synched_folder["dest"], id: "mount_"+j.to_s,
+            owner: synched_folder["owner"],
+            group: synched_folder["group"],
+            mount_options: synched_folder["options"]
+        end
+      end
+
+      if machine.key?("vm_install_scripts") then
+        machine["vm_install_scripts"].each_with_index do |vm_install_scripts, j|
+          if vm_install_scripts["run"] then
+            node.vm.provision "shell", path: vm_install_scripts["path"]
+          end
+        end
+      end
+
+      if settings.key?("git_urls") then
+        settings["git_urls"].each_with_index do |git_url, j|
+          node.vm.provision "shell", inline: <<-SCRIPT
+          git clone #{git_url["src"]} /tmp/#{"git"+j.to_s}
+          mv /tmp/#{"git"+j.to_s} #{git_url["dest"]}
+          SCRIPT
+        end
+      end
+      if (File.exists?("keys/id_rsa") && File.exists?("keys/id_rsa.pub")) then
+        private_key = File.read("keys/id_rsa")
+        public_key = File.read("keys/id_rsa.pub")
+        node.vm.provision "shell", inline: <<-SCRIPT
+            mkdir -p /home/vagrant/.ssh
+            chmod 700 /home/vagrant/.ssh
+            echo '#{public_key}' >> /home/vagrant/.ssh/authorized_keys
+            echo '#{private_key}' >> /home/vagrant/.ssh/id_rsa
+            echo 'Host 192.168.*.*' >> /home/vagrant/.ssh/config
+            echo 'StrictHostKeyChecking no' >> /home/vagrant/.ssh/config
+            echo 'UserKnownHostsFile /dev/null' >> /home/vagrant/.ssh/config
+            chown -R vagrant: /home/vagrant/.ssh/
+            chmod 600 /home/vagrant/.ssh/*
+            SCRIPT
+      end
+
+      node.vm.provision :hosts do |provisioner|
+        vms.each_with_index do |machine, i|
+          provisioner.add_host machine["ip"], [machine["hostname"]]
+        end
+      end
+
+    end
+  end
+end

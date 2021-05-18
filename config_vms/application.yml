@@ -1,0 +1,36 @@
+---
+# Vagrant vm setting
+## Mandatory Settings
+hostname: application
+ip: 192.168.60.21
+primary: false
+ssh_host_port: 22021
+
+## Additional Settings (will be overriden by the dafaults if commented)
+memory: 4096
+cpu: 4
+# box: ubuntu/bionic64
+# box_version: ">= 20210514.0.0"
+# box_check_update: True
+forward_ports:
+  - guest: 8080
+    host: 8080
+  - guest: 8082
+    host: 8082
+synched_folder: 
+  - src: "scripts/"
+    dest: "/opt/scripts"
+    id: ansible
+    owner: vagrant
+    group: users
+    options:
+      - "dmode=775,fmode=774"
+
+## Application Settings
+vm_install_scripts:
+  - run: true
+    path: scripts/initial_install.sh
+  - run: false
+    path: scripts/install_ansible.sh
+  - run: true
+    path: scripts/install_docker.sh

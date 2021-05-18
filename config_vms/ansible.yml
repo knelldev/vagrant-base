@@ -1,0 +1,48 @@
+---
+# Vagrant vm setting
+## Mandatory Settings
+hostname: ansible
+ip: 192.168.60.11
+primary: true
+ssh_host_port: 22011
+
+## Additional Settings (will be overriden by the dafaults if commented)
+# memory: 1024
+# cpu: 2 
+# box: ubuntu/bionic64
+# box_version: ">= 20210514.0.0"
+# box_check_update: True
+# forward_ports:
+#   - guest: 8080
+#     host: 8080
+#   - guest: 8082
+#     host: 8082
+synched_folder: 
+  - src: "storage/"
+    dest: "/opt/ansible"
+    id: ansible
+    owner: vagrant
+    group: users
+    options:
+      - "dmode=775,fmode=774"
+  - src: "scripts/"
+    dest: "/opt/scripts"
+    id: ansible
+    owner: vagrant
+    group: users
+    options:
+      - "dmode=775,fmode=774"
+
+## Application Settings
+vm_install_scripts:
+  - run: true
+    path: scripts/initial_install.sh
+  - run: true
+    path: scripts/install_ansible.sh
+  - run: true
+    path: scripts/install_docker.sh
+
+## storage settings
+git_urls: 
+  - src: "https://github.com/knelldev/docker-compose-collection.git" #example # can also include username+token e.g. https://username@github.com/username/repository.git
+    dest: /opt/ansible

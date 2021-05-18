@@ -1,0 +1,14 @@
+---
+# General settings
+## Vagrant settings
+vb_linked_clone: true
+
+## Vagrant plugin settings
+vbguest_auto_update: true
+
+## Vagrant vm default settings
+memory: 1024
+cpu: 2 
+box: ubuntu/bionic64
+box_version: ">= 20210514.0.0"
+box_check_update: true

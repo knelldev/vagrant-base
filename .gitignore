@@ -1,0 +1,53 @@
+# ansible
+*.retry
+#ansible.cfg
+
+# vagrant
+.vagrant/
+
+# vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# project specific
+/private/*
+.virtualenv
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# intellij idea
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+
+# logs
+logs/*
+!logs/.gitkeep
+*.log
+ubuntu-bionic-18.04-cloudimg-console.log
+
+# distributions of the code
+dist/
+.idea/
+
+# vagrant base specific
+keys/*
+!keys/.gitkeep
+config_vms/*
+!config_vms/ansible.yml
+!config_vms/application.yml
+vagrantfile.settings.local.yml
+storage/*
+!storage/.gitkeep
+Gemfile
+Gemfile.lock
+
+# remove temporary files of refactoring
+_tmp/
+_old
