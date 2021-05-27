@@ -85,8 +85,7 @@ Vagrant.configure("2") do |config|
       if settings.key?("git_urls") then
         settings["git_urls"].each_with_index do |git_url, j|
           node.vm.provision "shell", inline: <<-SCRIPT
-          git clone #{git_url["src"]} /tmp/#{"git"+j.to_s}
-          mv /tmp/#{"git"+j.to_s} #{git_url["dest"]}
+          git clone #{git_url["src"]} #{git_url["dest"]} || cd #{git_url["dest"]} && git pull
           SCRIPT
         end
       end

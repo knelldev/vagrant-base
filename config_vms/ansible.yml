@@ -45,4 +45,4 @@ vm_install_scripts:
 ## storage settings
 git_urls: 
   - src: "https://github.com/knelldev/ansible-base" #example # can also include username+token e.g. https://username@github.com/username/repository.git
-    dest: /opt/ansible
+    dest: /opt/storage
