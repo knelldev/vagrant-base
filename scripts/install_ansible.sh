@@ -22,7 +22,6 @@ section_echo "$name Setting up environment"
 echo "alias a=ansible-playbook" >> /home/vagrant/.bashrc
 echo "alias ap=ansible-playbook" >> /home/vagrant/.bashrc
 echo "alias av=ansible-vault" >> /home/vagrant/.bashrc
-echo "cd /opt/storage" >> /home/vagrant/.bashrc
 
 section_echo "Finished setting up environment"
 
