@@ -39,6 +39,7 @@ echo "alias .....='cd ../../../../'" >> /home/vagrant/.bashrc
 echo "alias grep='grep --color=auto'" >> /home/vagrant/.bashrc
 echo "alias h='history'" >> /home/vagrant/.bashrc
 echo "alias path='echo -e \${PATH//:/\\n}'" >> /home/vagrant/.bashrc
+echo "alias ducks='du -cksh * | sort -rn | head'" >> /home/vagrant/.bashrc
 echo "alias ols=\"ls -la --color | awk '{k=0;for(i=0;i<=8;i++)k+=((substr(\\\$1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf(\\\" %0o \\\",k);print}'\"" >> /home/vagrant/.bashrc
 echo "cd /opt/storage" >> /home/vagrant/.bashrc
 
